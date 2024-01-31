@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Francisco Banda</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-aboutme">
+        <div class="text-container2">
+            <p align="left">
+				NFL Data Visualizer [2023]
+				<br><br>
+				Created a real-time data visualizer which utilized the 2022 Big Data Bowl which contains Next Gen Stats for all 2018-2020 Special Team plays. The data was parsed to optimize performance and keep the visualization as real-time as possible while not sacrificing performance. I've made this project in C++/C# and also in HTML/JavaScript using Observable to embed it onto my website!<br>(Scroll down to view it)
+				<br><br><br><br>
+                Intel 8080 Microprocessor Emulator [2020]
+				<br><br>
+				Worked with another SWE to emulate a hardware system in C++ and SDL Library. Learned how to make a disassembler, CPU/microprocessors, and hardware displays/inputs. This emulator was able to run Space Invaders (1978) ROM, but future development for other games has been discussed...
+				<br><br><br><br><br><br><br><br><br>
+            </p>
+			
+			<div class="nfl">
+				<div id="observablehq-viewof-selectedGame-ce13e1aa"></div>
+				<div id="observablehq-viewof-selectedPlayID-ce13e1aa"></div>
+				<div id="observablehq-viewof-frame-ce13e1aa"></div>
+				<div id="observablehq-viewof-playButton-ce13e1aa"></div>
+				<div id="observablehq-viewof-drawBreadcrumbs-ce13e1aa"></div>
+				<div id="observablehq-playTitle-ce13e1aa"></div>
+				<div id="observablehq-output-ce13e1aa"></div>
+				
+				<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@observablehq/inspector@5/dist/inspector.css">
+				<script type="module">
+				import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@5/dist/runtime.js";
+				import define from "https://api.observablehq.com/d/29a945f48b8c39dc.js?v=4";
+				new Runtime().module(define, name => {
+				if (name === "viewof selectedGame") return new Inspector(document.querySelector("#observablehq-viewof-selectedGame-ce13e1aa"));
+				if (name === "viewof selectedPlayID") return new Inspector(document.querySelector("#observablehq-viewof-selectedPlayID-ce13e1aa"));
+				if (name === "viewof frame") return new Inspector(document.querySelector("#observablehq-viewof-frame-ce13e1aa"));
+				if (name === "viewof playButton") return new Inspector(document.querySelector("#observablehq-viewof-playButton-ce13e1aa"));
+				if (name === "viewof drawBreadcrumbs") return new Inspector(document.querySelector("#observablehq-viewof-drawBreadcrumbs-ce13e1aa"));
+				if (name === "playTitle") return new Inspector(document.querySelector("#observablehq-playTitle-ce13e1aa"));
+				if (name === "output") return new Inspector(document.querySelector("#observablehq-output-ce13e1aa"));
+				return ["drawField","max_frame","progress"].includes(name);
+				});
+				</script>
+			</div>
+			
+			
+        </div>
+		<div class="return-button-container">
+			<a href="index.html" class="return-button">← BACK</a>
+		</div>
+		
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
