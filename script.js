@@ -1,36 +1,78 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const titles = ["|", "_", "|", "_", "|", "F", "Fr", "Fra", "Fran", "Franc", "Franci", "Francis", "Francisc", "Francisco", "Francisco", "Francisco", "Francisco", "Francisc", "Francis", "Franci", "Franc", "Fran", "Fra", "Fr", "F", "|", "_", "|", "_", "|", "B", "Ba", "Ban", "Band", "Banda", "Banda", "Banda", "Banda", "Band", "Ban", "Ba", "B"];
+const header = document.querySelector('[data-header]');
+const nav = document.querySelector('[data-nav]');
+const navToggle = document.querySelector('[data-nav-toggle]');
+const year = document.querySelector('#year');
+const toast = document.querySelector('[data-toast]');
+const projectModal = document.querySelector('[data-project-modal]');
+const projectOpeners = document.querySelectorAll('[data-project-trigger]');
+const projectCloseButtons = document.querySelectorAll('[data-project-close]');
 
-    let currentIndex = 0;
+if (year) year.textContent = `© ${new Date().getFullYear()}`;
 
-    function updateTitle() {
-        document.title = titles[currentIndex];
-        currentIndex = (currentIndex + 1) % titles.length;
+const setProjectModalState = (isOpen) => {
+  if (!projectModal) return;
+  projectModal.classList.toggle('is-open', isOpen);
+  projectModal.setAttribute('aria-hidden', String(!isOpen));
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+};
+
+projectOpeners.forEach((trigger) => {
+  trigger.addEventListener('click', () => setProjectModalState(true));
+  trigger.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      setProjectModalState(true);
     }
+  });
+});
 
-    updateTitle();
+projectCloseButtons.forEach((button) => {
+  button.addEventListener('click', () => setProjectModalState(false));
+});
 
-    setInterval(updateTitle, 250);
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && projectModal?.classList.contains('is-open')) {
+    setProjectModalState(false);
+  }
+});
 
-    const nameElement = document.getElementById('name');
-    if (nameElement) { // Check if the element exists
-        let name = 'Francisco Banda';
-        nameElement.innerHTML = ''; // Clear the content
-        let i = 0;
-        function typeWriter() {
-            if (i < name.length) {
-                nameElement.innerHTML += name.charAt(i);
-                i++;
-                setTimeout(typeWriter, 100);
-            }
-        }
-        typeWriter();
-    }
+const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 12);
+onScroll();
+window.addEventListener('scroll', onScroll, { passive: true });
 
-    const cursor = document.getElementById('cursor');
-    if (cursor) { // Check if the element exists
-        setInterval(() => {
-            cursor.style.opacity = (cursor.style.opacity === '0' ? '1' : '0');
-        }, 500);
-    }
+navToggle?.addEventListener('click', () => {
+  const open = nav?.classList.toggle('open');
+  navToggle.setAttribute('aria-expanded', String(Boolean(open)));
+});
+
+document.querySelectorAll('[data-nav] a').forEach((link) => {
+  link.addEventListener('click', () => {
+    nav?.classList.remove('open');
+    navToggle?.setAttribute('aria-expanded', 'false');
+  });
+});
+
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.12 }
+);
+
+document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+
+let toastTimer;
+document.querySelectorAll('[action-unavailable]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (!toast) return;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  });
 });
