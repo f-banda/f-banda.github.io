@@ -210,8 +210,8 @@ function initReveals() {
     once: true,
     onEnter: (batch) =>
       isFast()
-        ? gsap.set(batch, { y: 0, opacity: 1, overwrite: true })
-        : gsap.to(batch, { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: 'expo.out', overwrite: true }),
+        ? gsap.set(batch, { y: 0, opacity: 1, overwrite: 'auto' })
+        : gsap.to(batch, { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: 'expo.out', overwrite: 'auto' }),
   });
 
   // About: the lead paragraph "reads itself" as you scroll through it.
