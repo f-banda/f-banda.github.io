@@ -226,6 +226,36 @@ const pebbleDays = Array.from({ length: 35 }, (_, i) => {
       </div>
 
       <div class="project-grid">
+        <a class="project-card reveal" data-spotlight href="https://planpebble.vercel.app/" target="_blank" rel="noreferrer" aria-label="Open PlanPebble in a new tab">
+          <div class="project-preview pebble-preview" aria-hidden="true" data-parallax-box>
+            <div class="pebble-cal">
+              <div class="pebble-cal__head"><span>June</span><span class="pebble-cal__meta">4 / 4 free</span></div>
+              <div class="pebble-cal__grid">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => <span class="pebble-cal__dow">{d}</span>)}
+                {pebbleDays.map((day) => (
+                  <span class:list={['pebble-day', { 'pebble-day--empty': !day.n, 'pebble-day--pick': day.pick }]}>
+                    {day.n > 0 && <b>{day.n}</b>}
+                    {day.free > 0 && <i class="pebble-dots">{Array.from({ length: day.free }, () => <em class="pebble" />)}</i>}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div class="preview-label">GROUP PLANNING</div>
+          </div>
+          <div class="project-body">
+            <div class="project-number">01</div>
+            <div>
+              <p class="project-meta">Web app · Next build</p>
+              <h3>PlanPebble</h3>
+              <p>
+                A group planning website, find a day that works for everyone. No sign-up, one link, make memories.
+              </p>
+              <div class="tag-row"><span>Next.js</span><span>TypeScript</span><span>Full-Stack</span></div>
+              <span class="project-cta">Check it out →</span>
+            </div>
+          </div>
+        </a>
+
         <article class="project-card reveal" data-spotlight data-project-trigger tabindex="0" role="button" aria-label="Open NFL Data Visualizer project" aria-haspopup="dialog">
           <div class="project-preview data-preview" aria-hidden="true" data-parallax-box>
             <div class="field-lines"></div>
@@ -237,7 +267,7 @@ const pebbleDays = Array.from({ length: 35 }, (_, i) => {
             <div class="preview-label">REAL-TIME PLAY DATA</div>
           </div>
           <div class="project-body">
-            <div class="project-number">01</div>
+            <div class="project-number">02</div>
             <div>
               <p class="project-meta">Data visualization · 2022</p>
               <h3>NFL Data Visualizer - Click to View</h3>
@@ -259,7 +289,7 @@ const pebbleDays = Array.from({ length: 35 }, (_, i) => {
             <div class="preview-label">8080 CPU EMULATION</div>
           </div>
           <div class="project-body">
-            <div class="project-number">02</div>
+            <div class="project-number">03</div>
             <div>
               <p class="project-meta">Systems programming · 2020</p>
               <h3>Intel 8080 Emulator</h3>
@@ -268,36 +298,6 @@ const pebbleDays = Array.from({ length: 35 }, (_, i) => {
                 emulation, a disassembler, display and input handling, and eventually ran Space Invaders.
               </p>
               <div class="tag-row"><span>C++</span><span>SDL</span><span>CPU Emulation</span><span>Systems</span></div>
-            </div>
-          </div>
-        </a>
-
-        <a class="project-card reveal" data-spotlight href="https://planpebble.vercel.app/" target="_blank" rel="noreferrer" aria-label="Open PlanPebble in a new tab">
-          <div class="project-preview pebble-preview" aria-hidden="true" data-parallax-box>
-            <div class="pebble-cal">
-              <div class="pebble-cal__head"><span>June</span><span class="pebble-cal__meta">4 / 4 free</span></div>
-              <div class="pebble-cal__grid">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => <span class="pebble-cal__dow">{d}</span>)}
-                {pebbleDays.map((day) => (
-                  <span class:list={['pebble-day', { 'pebble-day--empty': !day.n, 'pebble-day--pick': day.pick }]}>
-                    {day.n > 0 && <b>{day.n}</b>}
-                    {day.free > 0 && <i class="pebble-dots">{Array.from({ length: day.free }, () => <em class="pebble" />)}</i>}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div class="preview-label">GROUP PLANNING</div>
-          </div>
-          <div class="project-body">
-            <div class="project-number">03</div>
-            <div>
-              <p class="project-meta">Web app · Next build</p>
-              <h3>PlanPebble</h3>
-              <p>
-                A group planning website, find a day that works for everyone. No sign-up, one link, make memories.
-              </p>
-              <div class="tag-row"><span>Next.js</span><span>TypeScript</span><span>Full-Stack</span></div>
-              <span class="project-cta">Check it out →</span>
             </div>
           </div>
         </a>
