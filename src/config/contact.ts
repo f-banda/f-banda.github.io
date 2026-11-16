@@ -22,10 +22,10 @@
  * ends by pointing visitors to LinkedIn instead of sending.
  */
 export const contactConfig = {
-  recaptchaSiteKey: '',
-  emailjsPublicKey: '',
-  emailjsServiceId: '',
-  emailjsTemplateId: '',
+  recaptchaSiteKey: '6Lei0CIuAAAAAC8UYVKvDq4uTMNE9myFLRRAju6E',
+  emailjsPublicKey: 'Akw27mN-qR7-2sPaH',
+  emailjsServiceId: 'service_93pzf6c',
+  emailjsTemplateId: 'template_xppqr6e',
 };
 
 export const isContactConfigured = Object.values(contactConfig).every((v) => v.trim().length > 0);

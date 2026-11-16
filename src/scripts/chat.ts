@@ -186,14 +186,24 @@ export function initChat() {
         await send(
           serviceId,
           templateId,
-          { from_name: data.name, reply_to: data.email, message: data.message, 'g-recaptcha-response': token },
+          {
+            from_name: data.name,
+            name: data.name,
+            reply_to: data.email,
+            message: data.message,
+            time: new Date().toLocaleString(),
+            'g-recaptcha-response': token,
+          },
           { publicKey, blockHeadless: true, limitRate: { id: 'chat-contact', throttle: 30_000 } },
         );
         box.remove();
         step = 'sent';
         setComposer('sent');
         await say(`Sent! Thanks, ${data.name} — I’ll get back to you at ${data.email} as soon as possible.`);
-      } catch {
+      } catch (err) {
+        // Visitors see a friendly message; the real reason (status + text from EmailJS) goes to the console.
+        const e = err as { status?: number; text?: string; name?: string; message?: string };
+        console.warn('[chat] send failed:', e?.status ?? e?.name, e?.text ?? e?.message ?? err);
         w.grecaptcha?.reset(captchaId);
         sendBtn.disabled = false;
         sendBtn.innerHTML = 'Try again <span aria-hidden="true">→</span>';
