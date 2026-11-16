@@ -59,7 +59,7 @@ export function initChat() {
   const typing = async (ms: number) => {
     const li = document.createElement('li');
     li.className = 'chat-msg chat-msg--bot chat-typing';
-    li.setAttribute('aria-label', 'Francisco is typing');
+    li.setAttribute('aria-label', 'Robot is typing');
     li.innerHTML = '<span></span><span></span><span></span>';
     log.append(li);
     scrollToEnd();

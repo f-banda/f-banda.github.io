@@ -12,13 +12,26 @@ gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel);
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => [...root.querySelectorAll<T>(sel)];
-const HEADER_OFFSET = -84;
+// Sections carry their own top padding, so landing a section at the very top keeps
+// its heading clear of the fixed header (same as the original anchor behaviour).
+const HEADER_OFFSET = 0;
 
 let lenis: Lenis | null = null;
 
+// While a nav click is gliding the page, skip work the user won't see (header hiding,
+// indicator hops, slow reveals) — that's what made long jumps stutter.
+let jumping = false;
+let moveIndicator: ((link: HTMLAnchorElement | null) => void) | null = null;
+const FAST_PX_PER_FRAME = 55;
+const isFast = () => jumping || Math.abs(lenis?.velocity ?? 0) > FAST_PX_PER_FRAME;
+/** Use as a ScrollTrigger onEnter: if we arrived at speed, finish the entrance instantly. */
+const finishIfFast = (self: ScrollTrigger) => { if (isFast()) self.animation?.progress(1); };
+const expoOut = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
 /* ----------------------------------------------------------------------------- smooth scroll */
 function initSmoothScroll() {
-  lenis = new Lenis({ autoRaf: false, lerp: 0.11, prevent: (node) => !!node.closest('[data-lenis-prevent]') });
+  lenis = new Lenis({ autoRaf: false, lerp: 0.12, prevent: (node) => !!node.closest('[data-lenis-prevent]') });
+  ScrollTrigger.config({ limitCallbacks: true, ignoreMobileResize: true });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis?.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -35,8 +48,25 @@ function initAnchors() {
     const target = id === '#top' || id === '#' ? 0 : $(id);
     if (target === null) return;
     event.preventDefault();
-    if (lenis) lenis.scrollTo(target, { offset: HEADER_OFFSET, duration: 1.4 });
-    else if (target === 0) window.scrollTo({ top: 0 });
+    if (link.hasAttribute('data-nav-link')) moveIndicator?.(link);
+    if (lenis) {
+      // Duration scales with distance (0.6–1.2s) so short hops feel snappy and long ones don't drag.
+      const destY = target === 0 ? 0 : target.getBoundingClientRect().top + scrollY + HEADER_OFFSET;
+      const distance = Math.abs(destY - scrollY);
+      jumping = true;
+      document.documentElement.classList.add('is-jumping');
+      $('[data-header]')?.classList.remove('is-hidden');
+      lenis.scrollTo(target, {
+        offset: HEADER_OFFSET,
+        duration: Math.min(1.2, Math.max(0.6, distance / 4000)),
+        easing: expoOut,
+        lock: true,
+        onComplete: () => {
+          jumping = false;
+          document.documentElement.classList.remove('is-jumping');
+        },
+      });
+    } else if (target === 0) window.scrollTo({ top: 0 });
     else target.scrollIntoView();
     history.replaceState(null, '', id === '#top' ? location.pathname : id);
   });
@@ -54,6 +84,7 @@ function initHeader() {
     onUpdate(self) {
       const y = self.scroll();
       header.classList.toggle('scrolled', y > 12);
+      if (jumping) return;
       const menuOpen = $('[data-nav]')?.classList.contains('open');
       header.classList.toggle('is-hidden', self.direction === 1 && y > 520 && !menuOpen);
     },
@@ -65,11 +96,17 @@ function initNavIndicator() {
   const links = $$<HTMLAnchorElement>('[data-nav-link]');
   if (!indicator || !links.length) return;
 
+  let current: HTMLAnchorElement | null | undefined;
   const moveTo = (link: HTMLAnchorElement | null) => {
+    if (link === current) return;
+    current = link;
     links.forEach((l) => l.classList.toggle('is-active', l === link));
-    if (!link) return gsap.to(indicator, { opacity: 0, duration: 0.3 });
-    gsap.to(indicator, { x: link.offsetLeft, width: link.offsetWidth, opacity: 1, duration: 0.55, ease: 'expo.out' });
+    if (!link) return gsap.to(indicator, { opacity: 0, duration: 0.3, overwrite: 'auto' });
+    gsap.to(indicator, { x: link.offsetLeft, width: link.offsetWidth, opacity: 1, duration: 0.55, ease: 'expo.out', overwrite: 'auto' });
   };
+  moveIndicator = moveTo;
+  // Sections passed mid-jump don't steal the indicator from the link that was clicked.
+  const onSection = (link: HTMLAnchorElement | null) => (self: ScrollTrigger) => { if (self.isActive && !jumping) moveTo(link); };
 
   links.forEach((link) => {
     const section = $(link.getAttribute('href')!);
@@ -78,10 +115,10 @@ function initNavIndicator() {
       trigger: section,
       start: 'top 45%',
       end: 'bottom 45%',
-      onToggle: (self) => self.isActive && moveTo(link),
+      onToggle: onSection(link),
     });
   });
-  ScrollTrigger.create({ trigger: '#top', start: 'top top', end: 'bottom 45%', onToggle: (self) => self.isActive && moveTo(null) });
+  ScrollTrigger.create({ trigger: '#top', start: 'top top', end: 'bottom 45%', onToggle: onSection(null) });
 }
 
 /* ----------------------------------------------------------------------------- hero intro */
@@ -124,7 +161,8 @@ function initHero() {
 
   // Idle float on the stat chips once they're in.
   tl.add(() => {
-    stats.forEach((el, i) => gsap.to(el, { y: i ? 8 : -8, duration: 2.6 + i, ease: 'sine.inOut', repeat: -1, yoyo: true }));
+    const floats = stats.map((el, i) => gsap.to(el, { y: i ? 8 : -8, duration: 2.6 + i, ease: 'sine.inOut', repeat: -1, yoyo: true }));
+    ScrollTrigger.create({ trigger: '#top', start: 'top top', end: 'bottom top', onToggle: (self) => floats.forEach((t) => (self.isActive ? t.play() : t.pause())) });
   });
 
   // Hero drifts away as you scroll past it.
@@ -142,7 +180,7 @@ function initHeadings() {
     gsap.to(el, {
       scrambleText: { text, chars: '0123456789/—', speed: 0.6, revealDelay: 0.15 },
       duration: 1.1,
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true, onEnter: finishIfFast },
     });
   });
 
@@ -158,7 +196,7 @@ function initHeadings() {
           duration: 1.2,
           stagger: 0.1,
           ease: 'expo.out',
-          scrollTrigger: { trigger: el, start: 'top 86%', once: true },
+          scrollTrigger: { trigger: el, start: 'top 86%', once: true, onEnter: finishIfFast },
         }),
     });
   });
@@ -170,7 +208,10 @@ function initReveals() {
   ScrollTrigger.batch(reveals, {
     start: 'top 88%',
     once: true,
-    onEnter: (batch) => gsap.to(batch, { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: 'expo.out', overwrite: true }),
+    onEnter: (batch) =>
+      isFast()
+        ? gsap.set(batch, { y: 0, opacity: 1, overwrite: true })
+        : gsap.to(batch, { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: 'expo.out', overwrite: true }),
   });
 
   // About: the lead paragraph "reads itself" as you scroll through it.
@@ -190,7 +231,7 @@ function initReveals() {
   }
   gsap.from('.about-card__row', {
     x: 24, opacity: 0, duration: 0.9, stagger: 0.08, ease: 'expo.out',
-    scrollTrigger: { trigger: '.about-card', start: 'top 82%', once: true },
+    scrollTrigger: { trigger: '.about-card', start: 'top 82%', once: true, onEnter: finishIfFast },
   });
 }
 
@@ -211,7 +252,7 @@ function initTimeline() {
     ScrollTrigger.create({ trigger: item, start: 'top 60%', toggleClass: { targets: item, className: 'is-reached' } });
     gsap.from($$('li, .tag-row span', item), {
       x: 18, opacity: 0, duration: 0.7, stagger: 0.05, ease: 'power3.out',
-      scrollTrigger: { trigger: item, start: 'top 78%', once: true },
+      scrollTrigger: { trigger: item, start: 'top 78%', once: true, onEnter: finishIfFast },
     });
   });
 }
@@ -231,7 +272,7 @@ function initProjects() {
   if (field) {
     const play = gsap.timeline({ repeat: -1, repeatDelay: 0.6, yoyo: true, paused: true, defaults: { duration: 2.2, ease: 'sine.inOut' } });
     play.to('.player--1', { x: 176, y: 71 }, 0).to('.player--2', { x: 97, y: -108 }, 0).to('.player--3', { x: -46, y: 64 }, 0);
-    gsap.from('.route', { scaleX: 0, duration: 1.4, ease: 'expo.out', stagger: 0.2, scrollTrigger: { trigger: field, start: 'top 80%', once: true } });
+    gsap.from('.route', { scaleX: 0, duration: 1.4, ease: 'expo.out', stagger: 0.2, scrollTrigger: { trigger: field, start: 'top 80%', once: true, onEnter: finishIfFast } });
     ScrollTrigger.create({ trigger: field, start: 'top bottom', end: 'bottom top', onToggle: (self) => (self.isActive ? play.play() : play.pause()) });
   }
 
@@ -247,11 +288,11 @@ function initProjects() {
 function initMisc() {
   gsap.from('.skill-card', {
     y: 40, opacity: 0, duration: 1, stagger: { each: 0.1, grid: 'auto', from: 'start' }, ease: 'expo.out',
-    scrollTrigger: { trigger: '.skills-grid', start: 'top 82%', once: true },
+    scrollTrigger: { trigger: '.skills-grid', start: 'top 82%', once: true, onEnter: finishIfFast },
   });
   const niu = $('[data-float]');
   if (niu) {
-    gsap.from(niu, { rotate: -14, scale: 0.7, opacity: 0, duration: 1.4, ease: 'elastic.out(1, 0.6)', scrollTrigger: { trigger: niu, start: 'top 85%', once: true } });
+    gsap.from(niu, { rotate: -14, scale: 0.7, opacity: 0, duration: 1.4, ease: 'elastic.out(1, 0.6)', scrollTrigger: { trigger: niu, start: 'top 85%', once: true, onEnter: finishIfFast } });
     gsap.to(niu, { yPercent: -18, ease: 'none', scrollTrigger: { trigger: niu, start: 'top bottom', end: 'bottom top', scrub: true } });
   }
   const contact = $('.contact-card');

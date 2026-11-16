@@ -5,8 +5,8 @@
   display: inline-flex; align-items: center; gap: .65rem;
   padding: .45rem 1rem .45rem .45rem;
   border: 1px solid var(--line-strong); border-radius: 999px;
-  background: rgba(13, 20, 31, .86); color: var(--text);
-  backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
+  background: rgba(13, 20, 31, .95); color: var(--text);
+  /* no backdrop blur: it would re-blur the page under it on every scroll frame */
   box-shadow: 0 14px 40px rgba(0, 0, 0, .4), inset 0 1px rgba(255, 255, 255, .04);
   font-size: .84rem; font-weight: 700; cursor: pointer;
   transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;

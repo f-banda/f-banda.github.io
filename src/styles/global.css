@@ -23,7 +23,7 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-padding-top: 84px; }
+html { scroll-padding-top: 0; }
 html.is-locked { overflow: hidden; }
 body {
   margin: 0;
