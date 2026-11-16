@@ -297,10 +297,14 @@ function initMisc() {
   }
   const contact = $('.contact-card');
   if (contact) {
+    // One-shot (not scrubbed): the contact card is the last section, so on tall screens the page
+    // can't scroll far enough to finish a scroll-linked reveal, which left the card clipped.
     gsap.fromTo(contact, { clipPath: 'inset(12% 8% 12% 8% round 28px)' }, {
       clipPath: 'inset(0% 0% 0% 0% round 28px)',
-      ease: 'none',
-      scrollTrigger: { trigger: contact, start: 'top 95%', end: 'top 45%', scrub: 0.6 },
+      duration: 1.2,
+      ease: 'expo.out',
+      clearProps: 'clipPath',
+      scrollTrigger: { trigger: contact, start: 'top 90%', once: true, onEnter: finishIfFast },
     });
   }
 }
