@@ -280,6 +280,15 @@ function initProjects() {
     ScrollTrigger.create({ trigger: field, start: 'top bottom', end: 'bottom top', onToggle: (self) => (self.isActive ? play.play() : play.pause()) });
   }
 
+  // PlanPebble preview: pebbles drop into their days, then the picked day lights up.
+  const calendar = $('.pebble-cal');
+  if (calendar) {
+    const tl = gsap.timeline({ scrollTrigger: { trigger: calendar, start: 'top 82%', toggleActions: ENTRANCE, onEnter: finishIfFast } });
+    tl.from(calendar, { y: 30, rotateX: 12, opacity: 0, transformPerspective: 900, duration: 1, ease: 'expo.out' })
+      .from($$('.pebble', calendar), { scale: 0, y: -6, duration: 0.45, ease: 'back.out(3)', stagger: { each: 0.025, from: 'random' } }, 0.35)
+      .from('.pebble-day--pick', { scale: 0.6, duration: 0.6, ease: 'back.out(2.2)' }, '-=0.15');
+  }
+
   // Arcade preview: invaders march in steps, the cannon tracks them.
   const arcade = $('.arcade-preview');
   if (arcade) {
