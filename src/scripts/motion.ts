@@ -26,6 +26,8 @@ const FAST_PX_PER_FRAME = 55;
 const isFast = () => jumping || Math.abs(lenis?.velocity ?? 0) > FAST_PX_PER_FRAME;
 /** Use as a ScrollTrigger onEnter: if we arrived at speed, finish the entrance instantly. */
 const finishIfFast = (self: ScrollTrigger) => { if (isFast()) self.animation?.progress(1); };
+/** onEnter, onLeave, onEnterBack, onLeaveBack — entrances never rewind once shown. */
+const ENTRANCE = 'play complete play none';
 const expoOut = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
 
 /* ----------------------------------------------------------------------------- smooth scroll */
@@ -180,7 +182,7 @@ function initHeadings() {
     gsap.to(el, {
       scrambleText: { text, chars: '0123456789/—', speed: 0.6, revealDelay: 0.15 },
       duration: 1.1,
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true, onEnter: finishIfFast },
+      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: ENTRANCE, onEnter: finishIfFast },
     });
   });
 
@@ -196,7 +198,7 @@ function initHeadings() {
           duration: 1.2,
           stagger: 0.1,
           ease: 'expo.out',
-          scrollTrigger: { trigger: el, start: 'top 86%', once: true, onEnter: finishIfFast },
+          scrollTrigger: { trigger: el, start: 'top 86%', toggleActions: ENTRANCE, onEnter: finishIfFast },
         }),
     });
   });
@@ -205,13 +207,15 @@ function initHeadings() {
 function initReveals() {
   const reveals = $$('.reveal').filter((el) => !el.closest('#top'));
   gsap.set(reveals, { y: 34, opacity: 0 });
+  const show = (batch: Element[]) =>
+    isFast()
+      ? gsap.set(batch, { y: 0, opacity: 1, overwrite: 'auto' })
+      : gsap.to(batch, { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: 'expo.out', overwrite: 'auto' });
   ScrollTrigger.batch(reveals, {
     start: 'top 88%',
-    once: true,
-    onEnter: (batch) =>
-      isFast()
-        ? gsap.set(batch, { y: 0, opacity: 1, overwrite: true })
-        : gsap.to(batch, { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: 'expo.out', overwrite: true }),
+    onEnter: show,
+    onEnterBack: show, // scrolling up into a section that was skipped (e.g. page restored at the bottom)
+    onLeave: (batch) => gsap.set(batch, { y: 0, opacity: 1, overwrite: 'auto' }),
   });
 
   // About: the lead paragraph "reads itself" as you scroll through it.
@@ -231,7 +235,7 @@ function initReveals() {
   }
   gsap.from('.about-card__row', {
     x: 24, opacity: 0, duration: 0.9, stagger: 0.08, ease: 'expo.out',
-    scrollTrigger: { trigger: '.about-card', start: 'top 82%', once: true, onEnter: finishIfFast },
+    scrollTrigger: { trigger: '.about-card', start: 'top 82%', toggleActions: ENTRANCE, onEnter: finishIfFast },
   });
 }
 
@@ -249,10 +253,10 @@ function initTimeline() {
     scrollTrigger: { trigger: timeline, start: 'top 60%', end: 'bottom 60%', scrub: 0.4 },
   });
   $$('.timeline-item', timeline).forEach((item) => {
-    ScrollTrigger.create({ trigger: item, start: 'top 60%', toggleClass: { targets: item, className: 'is-reached' } });
+    ScrollTrigger.create({ trigger: item, start: 'top 60%', end: 'max', toggleClass: { targets: item, className: 'is-reached' } });
     gsap.from($$('li, .tag-row span', item), {
       x: 18, opacity: 0, duration: 0.7, stagger: 0.05, ease: 'power3.out',
-      scrollTrigger: { trigger: item, start: 'top 78%', once: true, onEnter: finishIfFast },
+      scrollTrigger: { trigger: item, start: 'top 78%', toggleActions: ENTRANCE, onEnter: finishIfFast },
     });
   });
 }
@@ -272,7 +276,7 @@ function initProjects() {
   if (field) {
     const play = gsap.timeline({ repeat: -1, repeatDelay: 0.6, yoyo: true, paused: true, defaults: { duration: 2.2, ease: 'sine.inOut' } });
     play.to('.player--1', { x: 176, y: 71 }, 0).to('.player--2', { x: 97, y: -108 }, 0).to('.player--3', { x: -46, y: 64 }, 0);
-    gsap.from('.route', { scaleX: 0, duration: 1.4, ease: 'expo.out', stagger: 0.2, scrollTrigger: { trigger: field, start: 'top 80%', once: true, onEnter: finishIfFast } });
+    gsap.from('.route', { scaleX: 0, duration: 1.4, ease: 'expo.out', stagger: 0.2, scrollTrigger: { trigger: field, start: 'top 80%', toggleActions: ENTRANCE, onEnter: finishIfFast } });
     ScrollTrigger.create({ trigger: field, start: 'top bottom', end: 'bottom top', onToggle: (self) => (self.isActive ? play.play() : play.pause()) });
   }
 
@@ -288,19 +292,23 @@ function initProjects() {
 function initMisc() {
   gsap.from('.skill-card', {
     y: 40, opacity: 0, duration: 1, stagger: { each: 0.1, grid: 'auto', from: 'start' }, ease: 'expo.out',
-    scrollTrigger: { trigger: '.skills-grid', start: 'top 82%', once: true, onEnter: finishIfFast },
+    scrollTrigger: { trigger: '.skills-grid', start: 'top 82%', toggleActions: ENTRANCE, onEnter: finishIfFast },
   });
   const niu = $('[data-float]');
   if (niu) {
-    gsap.from(niu, { rotate: -14, scale: 0.7, opacity: 0, duration: 1.4, ease: 'elastic.out(1, 0.6)', scrollTrigger: { trigger: niu, start: 'top 85%', once: true, onEnter: finishIfFast } });
+    gsap.from(niu, { rotate: -14, scale: 0.7, opacity: 0, duration: 1.4, ease: 'elastic.out(1, 0.6)', scrollTrigger: { trigger: niu, start: 'top 85%', toggleActions: ENTRANCE, onEnter: finishIfFast } });
     gsap.to(niu, { yPercent: -18, ease: 'none', scrollTrigger: { trigger: niu, start: 'top bottom', end: 'bottom top', scrub: true } });
   }
   const contact = $('.contact-card');
   if (contact) {
+    // One-shot (not scrubbed): the contact card is the last section, so on tall screens the page
+    // can't scroll far enough to finish a scroll-linked reveal, which left the card clipped.
     gsap.fromTo(contact, { clipPath: 'inset(12% 8% 12% 8% round 28px)' }, {
       clipPath: 'inset(0% 0% 0% 0% round 28px)',
-      ease: 'none',
-      scrollTrigger: { trigger: contact, start: 'top 95%', end: 'top 45%', scrub: 0.6 },
+      duration: 1.2,
+      ease: 'expo.out',
+      clearProps: 'clipPath',
+      scrollTrigger: { trigger: contact, start: 'top 90%', toggleActions: ENTRANCE, onEnter: finishIfFast },
     });
   }
 }
@@ -378,5 +386,17 @@ export function initMotion() {
   initPointer();
   initNavIndicator();
 
+  // Anything the page loaded past (refresh at the bottom, deep links) is shown immediately,
+  // so scrolling back up never reveals empty sections.
+  const completePassed = () => {
+    ScrollTrigger.getAll().forEach((st) => {
+      if (st.animation && !st.vars.scrub && st.progress === 1) st.animation.progress(1);
+    });
+    $('.reveal').forEach((el) => {
+      if (el.getBoundingClientRect().top < innerHeight * 0.88) gsap.set(el, { y: 0, opacity: 1, overwrite: 'auto' });
+    });
+  };
+  ScrollTrigger.addEventListener('refresh', completePassed);
+  completePassed();
   document.fonts?.ready.then(() => ScrollTrigger.refresh());
 }
