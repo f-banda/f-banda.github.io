@@ -1,0 +1,50 @@
+---
+// Support-chat style contact widget. Behaviour: src/scripts/chat.ts. Keys: src/config/contact.ts.
+import { contactConfig, isContactConfigured } from '../config/contact';
+---
+<div
+  class="chat"
+  data-chat
+  data-configured={isContactConfigured ? 'true' : 'false'}
+  data-site-key={contactConfig.recaptchaSiteKey}
+  data-public-key={contactConfig.emailjsPublicKey}
+  data-service-id={contactConfig.emailjsServiceId}
+  data-template-id={contactConfig.emailjsTemplateId}
+>
+  <button class="chat-launcher" type="button" data-chat-open data-chat-launcher aria-haspopup="dialog" aria-expanded="false" aria-controls="chat-panel">
+    <span class="chat-launcher__avatar brand-mark" aria-hidden="true">FB</span>
+    <span class="chat-launcher__label">Message me</span>
+    <svg class="chat-launcher__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" stroke-linejoin="round" /></svg>
+  </button>
+
+  <section class="chat-panel" id="chat-panel" role="dialog" aria-modal="false" aria-labelledby="chat-title" data-chat-panel data-lenis-prevent hidden>
+    <header class="chat-panel__head">
+      <span class="brand-mark chat-panel__avatar" aria-hidden="true">FB<i class="chat-status"></i></span>
+      <div class="chat-panel__who">
+        <h2 id="chat-title">Francisco</h2>
+        <p>Leave a message — I’ll reply by email</p>
+      </div>
+      <button class="chat-icon-btn" type="button" data-chat-restart aria-label="Start over" title="Start over">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </button>
+      <button class="chat-icon-btn" type="button" data-chat-close aria-label="Close chat" title="Close">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" /></svg>
+      </button>
+    </header>
+
+    <ol class="chat-log" role="log" aria-live="polite" aria-relevant="additions" data-chat-log></ol>
+
+    <form class="chat-compose" data-chat-form novalidate>
+      <label class="sr-only" for="chat-input" data-chat-label>Your reply</label>
+      <!-- Honeypot: hidden from people, tempting to bots. -->
+      <input class="chat-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" data-chat-hp />
+      <textarea id="chat-input" class="chat-input" rows="1" maxlength="2000" placeholder="Type your name…" data-chat-input></textarea>
+      <button class="chat-send" type="submit" aria-label="Send reply" data-chat-submit>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </button>
+    </form>
+    <p class="chat-foot">
+      Protected by reCAPTCHA{' · '}<a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy</a>{' · '}<a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms</a>
+    </p>
+  </section>
+</div>
