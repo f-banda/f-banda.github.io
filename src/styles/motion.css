@@ -1,0 +1,78 @@
+/* Styles for the motion layer (see src/scripts/motion.ts). */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Hero pieces wait for the intro timeline; shown at once if motion is off or JS stalls. */
+.js [data-hero-title], .js [data-hero-item], .js [data-hero-stack], .js [data-hero-visual] { visibility: hidden; }
+.motion-off [data-hero-title], .motion-off [data-hero-item], .motion-off [data-hero-stack], .motion-off [data-hero-visual],
+.motion-fallback [data-hero-title], .motion-fallback [data-hero-item], .motion-fallback [data-hero-stack], .motion-fallback [data-hero-visual] { visibility: visible; }
+
+/* SplitText line masks: leave room for descenders */
+[data-hero-title] > div, [data-split] > div { padding-bottom: .1em; margin-bottom: -.1em; }
+
+.scroll-progress { position: fixed; top: 0; left: 0; right: 0; z-index: 60; height: 2px; pointer-events: none; }
+.scroll-progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); transform: scaleX(0); transform-origin: left; box-shadow: 0 0 12px rgba(114, 230, 255, .5); }
+
+.cursor-glow {
+  position: fixed; top: 0; left: 0; z-index: -1;
+  width: 520px; height: 520px; margin: -260px 0 0 -260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(109, 140, 255, .11), rgba(114, 230, 255, .04) 40%, transparent 70%);
+  pointer-events: none; opacity: 0; transition: opacity .6s ease;
+}
+.cursor-glow.is-on { opacity: 1; }
+
+.floating-stat { z-index: 2; }
+.system-card { will-change: transform; }
+
+/* cursor spotlight on cards */
+[data-spotlight] { position: relative; isolation: isolate; }
+[data-spotlight]::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(126, 154, 255, .10), transparent 45%);
+  opacity: 0; transition: opacity .35s ease;
+}
+[data-spotlight]:hover::after { opacity: 1; }
+.skill-card { transition: background .3s ease; }
+.skill-card:hover { background: rgba(255, 255, 255, .015); }
+
+.magnetic { will-change: transform; }
+
+/* timeline progress line + reached markers */
+.timeline-progress { position: absolute; top: 0; bottom: 0; left: 170px; width: 1px; background: linear-gradient(to bottom, var(--blue), var(--cyan)); transform-origin: top; box-shadow: 0 0 10px rgba(114, 230, 255, .45); }
+.timeline-marker::before { transition: background .4s ease, box-shadow .4s ease, transform .4s cubic-bezier(.34, 1.56, .64, 1); }
+.timeline-item.is-reached .timeline-marker::before { background: #7892ff; box-shadow: 0 0 0 6px rgba(109, 140, 255, .12), 0 0 22px rgba(114, 230, 255, .55); transform: scale(1.15); }
+.timeline-date { transition: color .4s ease; }
+.timeline-item.is-reached .timeline-date { color: #b9c9ff; }
+@media (max-width: 760px) { .timeline-progress { left: 7px; } }
+
+.project-preview > * { will-change: transform; }
+.route { transform-origin: left center; }
+
+.nfl-status { margin: 2rem 0; color: var(--muted); font-size: .85rem; text-align: center; }
+.project-modal.is-open .project-modal__dialog { animation: modal-in .55s cubic-bezier(.16, 1, .3, 1); }
+.project-modal.is-open .project-modal__backdrop { animation: fade .4s ease; }
+@keyframes modal-in { from { opacity: 0; transform: translateY(28px) scale(.97); } }
+@keyframes fade { from { opacity: 0; } }
+
+/* ----------------------------------------------------------------- scroll performance
+   Same look, cheaper frames: avoid re-blurring large layers while the page moves. */
+
+/* Background glows: a radial gradient instead of filter: blur(100px), on their own layer. */
+.site-glow { width: 44rem; height: 44rem; margin: -7rem 0 0 -7rem; filter: none; opacity: .16; will-change: transform; }
+.site-glow--one { background: radial-gradient(closest-side, #4869ff, rgba(72, 105, 255, 0)); }
+.site-glow--two { margin: -7rem -7rem 0 0; background: radial-gradient(closest-side, #2f94cf, rgba(47, 148, 207, 0)); }
+
+/* Static full-screen overlays get promoted once instead of repainting under every scroll frame. */
+.noise, body::before { transform: translateZ(0); will-change: transform; }
+
+/* Backdrop blur only where nothing moves underneath it; elsewhere use a solid tint. */
+.site-header.scrolled { backdrop-filter: blur(12px) saturate(130%); -webkit-backdrop-filter: blur(12px) saturate(130%); }
+.preview-label { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(7, 11, 18, .86); }
+.floating-stat { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 20, 31, .94); }
+
+/* Mid-jump from the nav: no hover effects firing as cards fly under a still cursor. */
+.is-jumping [data-spotlight]::after, .is-jumping .cursor-glow { opacity: 0 !important; }
+.is-jumping .project-card:hover { transform: none; }
+
+/* Off-screen sections skip rendering work until they're near the viewport. */
+.footer { content-visibility: auto; contain-intrinsic-size: auto 120px; }
